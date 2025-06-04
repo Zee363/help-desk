@@ -27,7 +27,7 @@ exports.registerUser = async (req, res) => {
       });
 
       await newUser.save();
-      
+
       const token = createToken(newUser);
       console.log('Generated Token:', token);
 
@@ -41,4 +41,28 @@ exports.registerUser = async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
+
+// Login an existing user
+exports.loginUser = async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        const user = await User.findOne({ email });
+        if (!user) return res.status(400).json({ message: 'Invalid email or password' });
+
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) return res.status(400).json({ message: 'Invalid email or password' });
        
+        const token = createToken(user);
+        console.log('Generated Token:', token);
+
+        res.status(200).json({
+            message: 'Login successful',
+            token: token,
+            user: { id: user._id, fullname: user.fullname, email: user.email }
+        });
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
