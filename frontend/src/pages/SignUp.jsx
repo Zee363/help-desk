@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import '../styles/SignUp.css';
 
 const SignUp = () => {
   const [formData, setFormData] = useState({ fullname: '', email: '', password: '' });
 
+  const navigate = useNavigate();
   const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prevData) => ({
@@ -34,6 +37,7 @@ const SignUp = () => {
                 const data = await response.json();
                 console.log(data);
  
+                navigate('/login');
             }
             catch (error) {
                 console.error("Error:", error);
@@ -62,7 +66,10 @@ const SignUp = () => {
           <label>Password</label>
           <input type="password" name="password" value={formData.password} onChange={handleChange} required />
 
-          <button type="submit">Create Account</button>
+           <span className="last-buttons">
+            <button type="submit">Sign Up</button>
+            <p className="button-par text-white">Already have an account? {""}<Link to={"/login"}>Login</Link></p>
+            </span>
         </form>
       </div>
     </div>

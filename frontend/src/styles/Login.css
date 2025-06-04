@@ -1,4 +1,4 @@
-.signup-wrapper {
+.login-wrapper {
   display: flex;
   height: 100vh;
   font-family: 'Roboto', sans-serif;
@@ -37,7 +37,7 @@
 }
 
 
-.signup-form {
+.login-form {
   background-color: white;
   padding: 40px;
   border-radius: 16px;
@@ -46,22 +46,22 @@
   max-width: 400px;
 }
 
-.signup-form h2 {
+.login-form h2 {
   margin-bottom: 10px;
 }
 
-.signup-form p {
+.login-form p {
   margin-bottom: 30px;
   color: #777;
 }
 
-.signup-form label {
+.login-form label {
   display: block;
   margin-bottom: 6px;
   font-weight: 500;
 }
 
-.signup-form input {
+.login-form input {
   width: 100%;
   padding: 12px;
   margin-bottom: 20px;
@@ -70,7 +70,7 @@
   font-size: 1rem;
 }
 
-.signup-form button {
+.login-form button {
   width: 107%;
   padding: 14px;
   background-color: purple;
@@ -82,21 +82,21 @@
 
 }
 
-.signup-form button:hover {
+.login-form button:hover {
   background-color: purple;
 }
 
-.signup-form .button-par {
+.login-form .button-par {
     text-align: center;
 }
 
 
 @media (max-width: 480px) {
-  .signup-form input {
+  .login-form input {
     padding: 10px;
   }
 
-  .signup-form button {
+  .login-form button {
     padding: 12px;
   }
 
