@@ -1,0 +1,106 @@
+.signup-wrapper {
+  display: flex;
+  height: 100vh;
+  font-family: 'Roboto', sans-serif;
+}
+
+
+.left-panel {
+  flex: 1;
+  background-image: url('../assets/signup-img.jpeg');
+  background-size: cover;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 40px;
+}
+
+
+.branding h1 {
+  font-size: 3rem;
+  margin-bottom: 10px;
+}
+
+.branding p {
+  font-size: 1.2rem;
+}
+
+
+.right-panel {
+  flex: 1;
+  background-color: #f9f9f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.signup-form {
+  background-color: white;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+}
+
+.signup-form h2 {
+  margin-bottom: 10px;
+}
+
+.signup-form p {
+  margin-bottom: 30px;
+  color: #777;
+}
+
+.signup-form label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.signup-form input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+.signup-form button {
+  width: 107%;
+  padding: 14px;
+  background-color: purple;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+
+}
+
+.signup-form button:hover {
+  background-color: purple;
+}
+
+
+@media (max-width: 480px) {
+  .signup-form input {
+    padding: 10px;
+  }
+
+  .signup-form button {
+    padding: 12px;
+  }
+
+  .branding h1 {
+    font-size: 1.6rem;
+  }
+
+  .branding p {
+    font-size: 1rem;
+  }
+}
