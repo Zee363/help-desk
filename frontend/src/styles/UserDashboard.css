@@ -1,0 +1,60 @@
+.user-dashboard h2, h3, p{
+  text-align: center;
+}
+
+.user-dashboard .request-button {
+    display: block;
+    margin: 0 auto;
+    margin-bottom: 30px;
+    padding: 10px 20px;
+    background-color: lightblue;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+.main-context {
+    border: 1px solid #ccc;
+    margin-top: 130px;
+    margin-left: 50px;
+    margin-right: 50px;
+    margin-bottom: 50px;
+    border-radius: 6px;;
+}
+
+.ticket-form {
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 10px 20px;
+  gap: 15px;
+  padding-bottom: 15px;
+  margin-bottom: 30px;
+}
+
+.ticket-form label {
+  font-weight: bold;
+}
+
+.ticket-form input,
+.ticket-form select {
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.ticket-form button {
+  background-color: #9c2d78;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 15px;
+}
+
+.ticket-form button:hover {
+  background-color: #7b235d;
+}

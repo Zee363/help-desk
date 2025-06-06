@@ -1,0 +1,78 @@
+.admin-sidebar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100px;
+  height: 100vh;
+  background-color: #ebcbe9;
+  color: black;
+  padding: 10px 8px;
+  border-radius: 10px;
+  margin: 10px;
+  margin-left: 15px;
+}
+
+.admin-sidebar
+  h3 {
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+    color: #9c2d78;
+  }
+.admin-sidebar h2 {
+  margin-bottom: 30px;
+  font-size: 1.4rem;
+  color: #9c2d78;
+}
+
+.admin-sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+.admin-sidebar ul li {
+  margin: 15px 0;
+}
+
+.admin-sidebar ul li a {
+  color: black;
+  text-decoration: none;
+  font-size: 1rem;
+}
+
+.admin-sidebar ul li a:hover {
+  color: #ff69b4;
+  text-decoration: underline;
+}
+
+.logout-btn {
+  background-color: #EE09BA;
+  border: none;
+  color: white;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  border-radius: 5px;
+}
+
+.logout-btn:hover {
+  background-color: #40012B;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .admin-sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+  }
+
+  .admin-sidebar ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .admin-sidebar ul li {
+    margin: 5px 0;
+  }
+}
