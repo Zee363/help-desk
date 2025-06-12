@@ -1,7 +1,7 @@
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
 
-const authenticateToken = (req, res, next) => {
+const authenticateToken = async (req, res, next) => {
     const authHeader = req.headers['authorization'];
     console.log('Auth Header:', authHeader);
 
@@ -12,6 +12,10 @@ const authenticateToken = (req, res, next) => {
         return res.status(401).json({ message: 'Access token missing.' });
     }
 
+    const user = await User.findById(req.user.id);
+    if (!user) {
+        return res.status(401).json({ message: 'User not found.' });
+    }
     jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
         if (err) {
             console.error('JWT verification error:', err);
