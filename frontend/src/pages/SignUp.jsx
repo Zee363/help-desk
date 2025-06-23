@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import '../styles/SignUp.css';
 
 const SignUp = () => {
-  const [formData, setFormData] = useState({ fullname: '', email: '', password: '' });
+  const [formData, setFormData] = useState({ fullname: '', email: '', password: '', role: '' });
 
   const navigate = useNavigate();
   const handleChange = (e) => {
@@ -67,6 +67,11 @@ const SignUp = () => {
           <input type="password" name="password" value={formData.password} onChange={handleChange} required />
 
            <span className="last-buttons">
+            <label>Role</label>
+            <select name="role" value={formData.role} onChange={handleChange} required>
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </select>
             <button type="submit">Sign Up</button>
             <p className="button-par text-white">Already have an account? {""}<Link to={"/login"}>Login</Link></p>
             </span>

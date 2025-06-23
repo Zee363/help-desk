@@ -61,7 +61,7 @@
   font-weight: 500;
 }
 
-.signup-form input {
+.signup-form input, select {
   width: 100%;
   padding: 12px;
   margin-bottom: 20px;
