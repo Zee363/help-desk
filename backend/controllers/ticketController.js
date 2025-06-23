@@ -1,6 +1,6 @@
 const Ticket = require('../models/ticket'); 
 
-exports.createTicket = async (req, res) => {
+const createTicket = async (req, res) => {
     try {
          const { subject, category, priority } = req.body;
 
@@ -28,7 +28,7 @@ exports.createTicket = async (req, res) => {
     }
 };
 
-exports.getTickets = async (req, res) => {
+ const getTickets = async (req, res) => {
     try {
 let filter = {};
 
@@ -45,7 +45,7 @@ if (req.user.role !== 'admin') {
     }
 };
 
-exports.getTicketById = async (req, res) => {
+const getTicketById = async (req, res) => {
     try {
     const { id } = req.params;
 
@@ -73,12 +73,14 @@ exports.getTicketById = async (req, res) => {
     }
 };
 
- exports.updateTicket = async (req, res) => {
+ const updateTicket = async (req, res) => {
     try {
     const { id } = req.params;
     const { subject, category, priority } = req.body;
 
     const ticketId = typeof id === 'object' ? id.id : id; // Handle both string and object ID formats
+
+    const existingTicket = await Ticket.findById(ticketId);
 
      if (!ticket) {
             return res.status(404).json({ message: 'Ticket not found' });
@@ -89,7 +91,7 @@ exports.getTicketById = async (req, res) => {
             return res.status(403).json({ message: 'Access denied' });
         }
         
-        const ticket = await Ticket.findByIdAndUpdate(
+        const updatedTicket = await Ticket.findByIdAndUpdate(
             ticketId,
             { subject, category, priority },
             { new: true }
@@ -97,7 +99,7 @@ exports.getTicketById = async (req, res) => {
 
         res.status(200).json({
             message: 'Ticket updated successfully',
-            ticket
+            ticket: updatedTicket,
         });
     } catch (error) {
         console.error('Error updating ticket:', error);
@@ -109,7 +111,7 @@ exports.getTicketById = async (req, res) => {
     }
 };
 
-exports.deleteTicket = async (req, res) => {
+const deleteTicket = async (req, res) => {
     try {
     const { id } = req.params;
 
@@ -127,4 +129,12 @@ exports.deleteTicket = async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 };  
+
+module.exports = {
+    createTicket,   
+    getTickets,
+    getTicketById,
+    updateTicket,
+    deleteTicket
+};
 

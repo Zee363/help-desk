@@ -13,7 +13,7 @@ const createToken = (user) => {
 
 // Register a new user
 exports.registerUser = async (req, res) => {
-    const { fullname, email, password } = req.body;
+    const { fullname, email, password, role } = req.body;
 
     try {
       const existingUser = await User.findOne({ email });
@@ -24,7 +24,7 @@ exports.registerUser = async (req, res) => {
           fullname,
           email,
           password: hashedPassword,
-          role: role || 'user' // Default role to 'user' if not provided
+          role: role || 'user'
       });
 
       await newUser.save();
@@ -35,7 +35,7 @@ exports.registerUser = async (req, res) => {
     res.status(201).json({
         message: 'User registered successfully',
         token: token,
-        user: { id: newUser._id, fullname: newUser.fullname, email: newUser.email}
+        user: { id: newUser._id, fullname: newUser.fullname, email: newUser.email, role: newUser.role }
     });
 } catch (error) {
         console.error('Registration error:', error);

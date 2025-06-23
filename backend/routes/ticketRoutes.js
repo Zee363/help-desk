@@ -1,6 +1,6 @@
 const express = require('express');
 const ticketController = require('../controllers/ticketController');
-const authenticateToken = require('../middleware/authMiddleware');
+const { authenticateToken, requireAdmin, filterByUserRole } = require('../middleware/authMiddleware');
 const router = express.Router();
 
 router.post('/create', authenticateToken, ticketController.createTicket);

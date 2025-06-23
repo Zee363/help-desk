@@ -12,18 +12,46 @@ const authenticateToken = async (req, res, next) => {
         return res.status(401).json({ message: 'Access token missing.' });
     }
 
-    const user = await User.findById(req.user.id);
-    if (!user) {
-        return res.status(401).json({ message: 'User not found.' });
-    }
+   
     jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
         if (err) {
             console.error('JWT verification error:', err);
-            return res.status(403).json({ message: 'Invalid access token.' });
+            const message = err.name === 'TokenExpiredError' ? 'Access token expired.' : 'Invalid access token.';
+            return res.status(403).json({ message });
         }
         req.user = user;
         next();
     });
+};
+
+const requireAdmin = (req, res, next) => {
+    if (!req.user) {
+        return res.status(401).json({ message: 'Authentication required.' });
+    }
+
+    if (req.user.role !== 'admin') {
+        return res.status(403).json({ message: 'Access denied. Admins only.' });
+    }
+
+    const requestedId = req.params.id || req.body.id;
+    if (requestedId && req.user._id.toString() !== requestedId.toString()) {
+        return res.status(403).json({ message: 'Access denied. You can only access your own data.' });
+    }
+
+    next();
 }
 
-module.exports = authenticateToken;
+    // Middleware to filter results based on user role
+    const filterByUserRole = (req, res, next) => {
+        if (!req.user) {
+            return res.status(401).json({ message: 'Authentication required.' });
+        }
+
+        if (req.user.role !== 'admin') {
+           req.user.filter = { createdBy: req.user._id };
+        }
+
+        next();
+    };
+
+module.exports = {authenticateToken, requireAdmin, filterByUserRole};
