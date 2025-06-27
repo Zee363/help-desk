@@ -1,12 +1,11 @@
 import React, {useState, useEffect} from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchTickets, createTicket } from '../redux/slices/ticketSlice'; 
 import Header from '../components/Header';
 import '../styles/UserDashboard.css'; 
 
 const UserDashboard = () => {
     const [showForm, setShowForm] = useState(false);
-    const [tickets, setTickets] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
     const [user, setUser] = useState(null);
     const [formData, setFormData] = useState({
     subject: '',
@@ -14,6 +13,10 @@ const UserDashboard = () => {
     category: '',
     dateCreated: ''
   });
+
+  const dispatch = useDispatch();
+  const { tickets, loading, error } = useSelector((state) => state.tickets);
+
 
   // Get token from localStorage
   const authToken = () => {
@@ -27,7 +30,7 @@ const UserDashboard = () => {
         throw new Error('No authentication token found');
       }
 
-      const response = await fetch('http://localhost:5002/api/auth', {
+      const response = await fetch('http://localhost:5002/api/user', {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -40,94 +43,29 @@ const UserDashboard = () => {
 
       const userData = await response.json();
       setUser(userData);
-      setLoading(false);
       return userData;
     } catch (err) {
       console.error('Error fetching user data:', err);
-      setError('Failed to load user data');
       return null;
     }
   };
 
-  // Fetch tickets based on user role
-  const fetchTickets = async () => {
-    try {
-      setLoading(true);
-      const token = authToken();
-
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
-
-      const response = await fetch('http://localhost:5002/api/tickets/all', {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`  
-    }
-      });
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error('Unauthorized access. Please log in again.');
-        } else if (response.status === 403) {
-          throw new Error('Access denied. You do not have permission to view these tickets.');
-        } else {
-          throw new Error('Failed to fetch tickets');
-        } 
-      }
-
-      const tickets = await response.json();
-      setTickets(tickets);
-    } catch (err) {
-      console.error('Error fetching tickets:', err);
-      setError(err.message || 'Failed to load tickets');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-
-  // Create a new ticket
-  const createTicket = async (ticketData) => {
-    try {
-      const token = authToken();
-
-      const response = await fetch('http://localhost:5002/api/tickets/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(ticketData)
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to create ticket');
-      }
-
-      const newTicket = await response.json();
-      return newTicket;
-    } catch (err) {
-      console.error('Error creating ticket:', err);
-      throw new Error('Failed to create ticket');
-    }
-  };
-
+ 
 //  Fetch user data whe the components firstloads
 useEffect(() => {
     const fetchData = async () => {
       const userData = await fetchUserData();
       if (userData) {
-        await fetchTickets();
+        dispatch(fetchTickets());
       }
     };
 
     fetchData();
-  }, []);
+  }, [dispatch]);
 
 
 
-  const handleChange = (e) => {
+  const handleChange = async(e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
@@ -137,8 +75,7 @@ useEffect(() => {
     console.log('Form submitted:', formData);
    
     try {
-      setLoading(true);
-      await createTicket(formData);
+       await dispatch(createTicket(formData)).unwrap(); // unwrap to catch any errors
       setFormData({
         subject: '',
         priority: '',
@@ -146,14 +83,9 @@ useEffect(() => {
         category: ''
       });
       setShowForm(false);
-
-      await fetchTickets(); // Refresh the ticket list after creating a new ticket
-
       alert('Ticket created successfully!');
     } catch (err) {
-      setError(err.message || 'Failed to create ticket');
-    } finally {
-      setLoading(false);
+      alert(err || 'Failed to create ticket');
     }
   };
 
@@ -226,25 +158,25 @@ useEffect(() => {
 
       <button type="submit">Submit Ticket</button>
 
-      {!loading && tickets.length > 0 && (
-  <div className="ticket-list">
-    <h3>Your Tickets</h3>
-    <ul>
-      {tickets.map((ticket) => (
-        <li key={ticket._id}>
-          <strong>{ticket.subject}</strong> - {ticket.priority} - {ticket.category}
-        </li>
-      ))}
-    </ul>
-  </div>
-)}
-      {loading && <p>Loading...</p>}
       {error && <p className="error">{error}</p>}
     </form>
-      )}
+  )}
+
+    {!loading && tickets.length > 0 && (
+      <div className="ticket-list">
+      <h3>Your Tickets</h3>
+      <ul>
+      {tickets.map((ticket) => (
+        <li key={ticket._id}><strong>{ticket.subject}</strong> - {ticket.priority} - {ticket.category}</li>
+      ))}
+      </ul>
+      </div>
+    )}
+
+    {loading && <p>Loading...</p>}
         </div>
         </div>
-    )
+    );
 };
 
 export default UserDashboard;

@@ -1,15 +1,24 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { loginStart, loginSuccess, loginFailure } from '../redux/slices/authSlice';
 import '../styles/Login.css';
 
 const Login = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const { loading, error } = useSelector((state) => state.auth);
+
+   // Local state for email and password
    const [email, setEmail] = useState('');
    const [password, setPassword] = useState('');
-   const [error, setError] = useState(null);
 
    const handleLogin = async (e) => {
      e.preventDefault();
-     setError(null);
+
+      // Dispatch login start action
+     dispatch(loginStart());
 
      try {
        const response = await fetch("http://localhost:5002/api/auth/login", {
@@ -22,18 +31,26 @@ const Login = () => {
 
        if (!response.ok) {
          const errorData = await response.json();
-         setError(errorData.message || 'Login failed');
+          dispatch(loginFailure(errorData.message || 'Login failed'));
          return;
        }
 
        const data = await response.json();
+       localStorage.setItem('token', data.token);
+       dispatch(loginSuccess({ user: data.user, token: data.token }));
        alert('Login successful!');
        console.log('User data:', data);
-       localStorage.setItem('token', data.token);
-       console.log('Token saved:', data.token);
+
+       // Navigate based on role
+      if (data.user.role === "admin") {
+      navigate("/admin/dashboard");
+     } else {
+      navigate("/user/dashboard");
+     }
      } catch (error) {
        console.error("Error:", error);
-       setError('An error occurred while logging in');
+       dispatch(loginFailure(error.message || 'Login failed'));
+       alert('Login failed. Please try again.');
      }
    }
 

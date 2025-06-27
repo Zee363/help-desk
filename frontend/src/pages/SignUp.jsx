@@ -1,12 +1,18 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { setLoading, setUser, setError, loginFailure } from '../redux/slices/authSlice';
 import '../styles/SignUp.css';
 
 const SignUp = () => {
   const [formData, setFormData] = useState({ fullname: '', email: '', password: '', role: '' });
-
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const { loading, error } = useSelector((state) => state.auth);
+
+
   const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prevData) => ({
@@ -17,32 +23,33 @@ const SignUp = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(formData);
+
+    // Dispatch loading state
+    dispatch(setLoading(true));
 
   try {
-                const response = await fetch("http://localhost:5002/api/auth/register", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(formData),
-                });
+        const response = await fetch("http://localhost:5002/api/auth/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+      });
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    console.error('Signup failed:', errorData);
-                    throw new Error('Signup failed');
-                  }
+      if (!response.ok) {
+        const errorData = await response.json();
+        dispatch(setError(errorData.message || 'Signup failed'));
+        throw new Error('Signup failed');
+      }
 
-                const data = await response.json();
-                console.log(data);
- 
-                navigate('/login');
-            }
-            catch (error) {
-                console.error("Error:", error);
-            }
-        }
+      const data = await response.json();
+      dispatch(setUser(data.user));
+
+      navigate('/login');
+  } catch (error) {
+    dispatch(loginFailure(error.message));
+  }
+  };
 
   return (
     <div className="signup-wrapper">
