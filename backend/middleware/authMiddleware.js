@@ -1,12 +1,12 @@
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
 
+// Verfy token and attach user to request
 const authenticateToken = async (req, res, next) => {
     const authHeader = req.headers['authorization'];
     console.log('Auth Header:', authHeader);
 
-    const token = authHeader && authHeader.split(' ')[1];
-    console.log('Token:', token);
+    const token = authHeader && authHeader.split(' ')[1]; 
 
     if (!token) {
         return res.status(401).json({ message: 'Access token missing.' });
@@ -19,11 +19,13 @@ const authenticateToken = async (req, res, next) => {
             const message = err.name === 'TokenExpiredError' ? 'Access token expired.' : 'Invalid access token.';
             return res.status(403).json({ message });
         }
-        req.user = user;
+        req.user = user; // attaches decoded token { id, email, role }
         next();
     });
 };
 
+
+// Middleware to allow only admin
 const requireAdmin = (req, res, next) => {
     if (!req.user) {
         return res.status(401).json({ message: 'Authentication required.' });
@@ -31,11 +33,6 @@ const requireAdmin = (req, res, next) => {
 
     if (req.user.role !== 'admin') {
         return res.status(403).json({ message: 'Access denied. Admins only.' });
-    }
-
-    const requestedId = req.params.id || req.body.id;
-    if (requestedId && req.user._id.toString() !== requestedId.toString()) {
-        return res.status(403).json({ message: 'Access denied. You can only access your own data.' });
     }
 
     next();

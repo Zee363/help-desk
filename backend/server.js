@@ -5,6 +5,7 @@ const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const cors = require('cors');
 const ticketRoutes = require('./routes/ticketRoutes');
+const userRoutes = require('./routes/userRoutes');
 
 const PORT = process.env.PORT || 5002;
 
@@ -13,6 +14,7 @@ app.use(express.json());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/tickets', ticketRoutes);
+app.use('/api', userRoutes);
 
 app.listen(PORT, () => {
   connectDB();
