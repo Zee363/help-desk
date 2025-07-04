@@ -11,7 +11,7 @@ const UserDashboard = () => {
     subject: '',
     priority: '',
     category: '',
-    dateCreated: ''
+    description: ''
   });
 
   const dispatch = useDispatch();
@@ -75,12 +75,17 @@ useEffect(() => {
     console.log('Form submitted:', formData);
    
     try {
+    const ticketData = {...formData, userId: user?._id, userEmail: user?.email, status: 'Open', createdAt: new Date().toISOString()} ;
+    console.log("Ticket data being sent:", ticketData);
+
        await dispatch(createTicket(formData)).unwrap(); // unwrap to catch any errors
-      setFormData({
+      
+       //Reset form
+       setFormData({
         subject: '',
         priority: '',
-        dateCreated: '',
-        category: ''
+        category: '',
+        description: ''
       });
       setShowForm(false);
       alert('Ticket created successfully!');
@@ -98,7 +103,7 @@ useEffect(() => {
             <h3>HelpDesk Pro</h3> 
             <h3 className="second-heading">User Dashboard</h3>
         </div>
-        <h2>Welcome back</h2>
+        <h2>Welcome back {user?.name ?`, ${user.name}` : ''}</h2>
         <div className="request-ticket">
             <h3>Request a Ticket</h3>
             <p>Need assistance? Click the button below to request a new support ticket.</p>
@@ -121,6 +126,14 @@ useEffect(() => {
         required
       />
 
+      <label>Descripton:</label>
+      <textarea 
+      name='description'
+      value={formData.description}
+      onChange={handleChange}
+      rows="4"  
+      />
+
       <label>Category:</label>
       <select
         name="category"
@@ -129,8 +142,8 @@ useEffect(() => {
         required
       >
         <option value="">Select category</option>
-        <option value="technical">Technical</option>
-        <option value="account">Account</option>
+        <option value="Technical">Technical</option>
+        <option value="Account">Account</option>
       </select>
 
       <label>Priority:</label>
@@ -147,17 +160,10 @@ useEffect(() => {
         <option value="Urgent">Urgent</option>
       </select>
 
-      <label>Date Created:</label>
-      <input
-        type="date"
-        name="dateCreated"
-        value={formData.dateCreated}
-        onChange={handleChange}
-        required
-      />
 
-      <button type="submit">Submit Ticket</button>
-
+      <button type="submit" disabled={loading}>
+        {loading ? 'Creating...' : 'Submit ticket'}
+      </button>
       {error && <p className="error">{error}</p>}
     </form>
   )}
@@ -165,15 +171,32 @@ useEffect(() => {
     {!loading && tickets.length > 0 && (
       <div className="ticket-list">
       <h3>Your Tickets</h3>
-      <ul>
-      {tickets.map((ticket) => (
-        <li key={ticket._id}><strong>{ticket.subject}</strong> - {ticket.priority} - {ticket.category}</li>
-      ))}
-      </ul>
+      <div className='tickets-container'>
+        {tickets.map((ticket) => (
+        <div key={ticket._id} className="ticket-item"><strong>{ticket.subject}</strong> 
+        <div className='ticket-header'>
+        <span className={`status ${ticket.status?.toLowerCase()}` }>{ticket.status} </span>
+        </div>
+        <div className='ticket-details'>
+          <span className='priority'>Priority: {ticket.priority}</span>
+          <span className='category'>Category: {ticket.category}</span>
+          <span className='date'>
+            Created: {new Date(ticket.createdAt).toLocaleDateString()}
+          </span>
+        </div>
       </div>
+        ))}
+    </div>
+  </div>
     )}
+      
 
-    {loading && <p>Loading...</p>}
+    {!loading && tickets.length === 0 && (
+      <div className='no-tickets'>
+        <p>You have not created any tickets yet.</p>
+        </div>
+    )}
+    {loading && <p>Loading tickets...</p>}
         </div>
         </div>
     );

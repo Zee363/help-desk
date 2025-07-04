@@ -5,11 +5,10 @@ import '../styles/Header.css';
 const Header = () => {
     return (
         <div className="header">
-            <h1>Dashboard</h1>
+            <h1>HelpDesk Pro</h1>
                 <ul>
-                    <li><Link to="/ticket">Request Ticket</Link></li>
-                    <li><Link to="/login">Track Ticket</Link></li>
-                    <li><Link to="/signup">View Responses</Link></li>
+                    <li><Link to="/tickets">Track Ticket</Link></li>
+                    <li><Link to="/responses">View Responses</Link></li>
                 </ul>  
     </div>
     )

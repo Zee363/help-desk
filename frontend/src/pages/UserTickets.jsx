@@ -55,20 +55,7 @@ const TicketStats = () => {
 
   // Get status class for styling
   const getStatusClass = (status) => {
-    if (!status) return "default=status-class";
-
-    switch (status.toLowerCase()) {
-      case "open":
-        return "status-open";
-      case "in progress":
-        return "status-in-progress";
-      case "pending":
-        return "status-pending";
-      case "resolved":
-        return "status-resolved";
-      default:
-        return "status-default";      
-    }
+    return `status ${status.toLowerCase().replace(' ', '-')}`;
   };
 
   if (loading && filteredTickets.length === 0) {
@@ -137,19 +124,20 @@ const TicketStats = () => {
               </div>
              
              <div className="filter-group">
-              <label>Prority:</label>
+              <label>Priority:</label>
               <select value={filters.priority} onChange={(e) => handleFilterChange('priority', e.target.value)}>
                 <option value="all">All Priority</option>
-                <option value="Low">LOW</option>
+                <option value="Low">Low</option>
                 <option value="Medium">Medium</option>
                 <option value="High">High</option>
-                <option value="Critical">Critical</option>
+                <option value="Urgent">Urgent</option>
               </select>
              </div>
 
            <div className="filter-group">
             <label>Category:</label>
             <select value={filters.category} onChange={(e) => handleFilterChange('category', e.target.value)}>
+              <option value="all">All Categories</option>
               <option value="Technical">Technical</option>
               <option value="Account">Account</option>
             </select>
@@ -171,6 +159,7 @@ const TicketStats = () => {
             <th>Priority</th>
             <th>Date Created</th>
             <th>Category</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -204,7 +193,7 @@ const TicketStats = () => {
           ) : (
             <tr>
               <td className="no-tickets">
-                {loading ? "Loading tckets..." : "No ticket found"}
+                {loading ? "Loading tickets..." : "No ticket found"}
               </td>
             </tr>
           )}  
@@ -214,8 +203,7 @@ const TicketStats = () => {
 
     {/* Tickets Count Information */}
     <div className="table-footer">
-      <p>Showing {filteredTickets.legth} of {stats.total} tickets
-        {filters.status !== "all" && ` (filtered by status: ${filters.status})`}
+      <p>Showing {filteredTickets.length} of {stats.total} tickets {filters.status !== "all" && ` (filtered by status: ${filters.status})`}
          {filters.priority !== "all" && ` (filtered by priority: ${filters.priority})`}
           {filters.category !== "all" && ` (filtered by category: ${filters.category})`}
       </p>
