@@ -6,6 +6,7 @@ const authRoutes = require('./routes/authRoutes');
 const cors = require('cors');
 const ticketRoutes = require('./routes/ticketRoutes');
 const userRoutes = require('./routes/userRoutes');
+const aiRoutes = require("./routes/aiRoutes");
 
 const PORT = process.env.PORT || 5002;
 
@@ -15,6 +16,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api', userRoutes);
+app.use('/api', aiRoutes);
 
 app.listen(PORT, () => {
   connectDB();
