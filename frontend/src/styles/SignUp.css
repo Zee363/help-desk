@@ -7,7 +7,7 @@
 
 .left-panel {
   flex: 1;
-  background-image: url('../assets/signup-img.jpeg');
+  background-image: url('../assets/signup-img.jpeg') !important;
   background-size: cover;
   color: white;
   display: flex;
@@ -17,6 +17,9 @@
   padding: 40px;
 }
 
+.signup-h2 {
+  text-align: center !important;
+}
 
 .branding h1 {
   font-size: 3rem;
