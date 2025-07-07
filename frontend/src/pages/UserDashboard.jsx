@@ -34,7 +34,6 @@ const UserDashboard = () => {
       }
 
    const decoded = jwtDecode(token);
-   console.log('Decoded token', decoded);
 
    const userId = decoded.id || decoded.userId || decoded.subject || decoded._id;
 
@@ -55,11 +54,9 @@ useEffect(() => {
   const loadUser = async () => {
     try {
     const userData = await getUserFromToken();
-    console.log("User data from token:", userData);
 
        if (userData) {
         const userId = userData.id || userData.userId || userData.subject || userData._id;
-        console.log("Extracted user ID:", userId);
 
         if (userId) {
         dispatch(fetchUserTickets(userId));

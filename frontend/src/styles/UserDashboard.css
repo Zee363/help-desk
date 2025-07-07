@@ -1,5 +1,6 @@
 .user-dashboard {
-  max-width: 100%;
+  max-width: 100% !important;
+  width: 100% !important;
   background: white;
   padding: 40px;
   border-radius: 8px;

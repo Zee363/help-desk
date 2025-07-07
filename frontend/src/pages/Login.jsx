@@ -21,7 +21,7 @@ const Login = () => {
      dispatch(loginStart());
 
      try {
-       const response = await fetch("http://localhost:5002/api/auth/login", {
+       const response = await fetch(`${process.env.BACKEND_URL}/api/auth/login`, {
          method: "POST",
          headers: {
            "Content-Type": "application/json",
@@ -39,7 +39,6 @@ const Login = () => {
        localStorage.setItem('token', data.token);
        dispatch(loginSuccess({ user: data.user, token: data.token }));
        alert('Login successful!');
-       console.log('User data:', data);
 
        // Navigate based on role
       if (data.user.role === "admin") {

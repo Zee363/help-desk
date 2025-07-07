@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { setInput, fetchAIResponse } from "../redux/slices/aiSlice";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRobot } from '@fortawesome/free-solid-svg-icons';
-import Header from "../components/Header";
 import  "../styles/Home.css";
 
 const Home = () => {

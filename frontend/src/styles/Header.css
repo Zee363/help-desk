@@ -7,7 +7,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 1rem 1rem;
-    background-color: #9c2d78;
+    background-color: #e90582;
     border-radius: 4px;
     color: white;
 }
@@ -178,7 +178,7 @@ to {
     top: 70px;
     right: 0;
     flex-direction: column;
-    background-color: #9c2d78;
+    background-color: #e90582;
     padding: 1rem;
     width: 200px;
     z-index: 999;

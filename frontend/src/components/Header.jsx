@@ -1,7 +1,7 @@
 import React, { useState, useEffect} from 'react';
 import { setInput, fetchAIResponse } from "../redux/slices/aiSlice";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBars } from '@fortawesome/free-solid-svg-icons';
+import { faBars, faRobot } from '@fortawesome/free-solid-svg-icons';
 import { Link, useNavigate } from 'react-router-dom';
 import jwtDecode from "jwt-decode";
 import '../styles/Header.css'; 
@@ -39,7 +39,7 @@ const Header = () => {
 
     return (
         <div id="header">
-            <h1 className='company-name'>HelpDesk Pro</h1>
+            <h1 className='company-name'><FontAwesomeIcon icon={faRobot} />HelpDesk Pro</h1>
 
             <nav>
                 <div className='hamburger' onClick={toggleMenu}><FontAwesomeIcon icon={faBars} /></div>
