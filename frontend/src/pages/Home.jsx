@@ -2,6 +2,8 @@ import React from "react";
 import { useDispatch,useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { setInput, fetchAIResponse } from "../redux/slices/aiSlice";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faRobot } from '@fortawesome/free-solid-svg-icons';
 import Header from "../components/Header";
 import  "../styles/Home.css";
 
@@ -25,7 +27,7 @@ const Home = () => {
         <div className="home-container">
             <div className="header">
                 <div className="header-content">
-                    <div className="logo">🤖</div>
+                    <div className="logo"><FontAwesomeIcon icon={faRobot} /></div>
                     <h1 className="title">HelpDesk Pro</h1>
                     </div>
         </div>

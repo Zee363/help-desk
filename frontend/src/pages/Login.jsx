@@ -64,7 +64,7 @@ const Login = () => {
       </div>
       <div className="right-panel">
         <form onSubmit={handleLogin} className="login-form">
-          <h2>Login</h2>
+          <h2 className='signup-h2'>Login</h2>
           <p>Welcome back! Please enter your credentials.</p>
           <div className="form-group">
           <label htmlFor="email">Email</label>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch} from "react-redux";
-import { fetchTickets, createTicket, updateTicketStatus, setFilters, selectFilteredTickets, clearError } from "../redux/slices/ticketSlice";
+import { fetchTickets, createTicket, updateTicketStatus, setFilters, selectFilteredTickets, clearError, deleteTicket } from "../redux/slices/ticketSlice";
 import '../styles/TicketStats.css'; 
 
 const TicketStats = () => {
@@ -17,6 +17,12 @@ const TicketStats = () => {
     category: "all"
   });
 
+  const [selectedTicket, setSelectedTicket] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [statusUpdateLoading, setStatusUpdateLoading] = useState(null);
+  const [editLoading, setEditLoading] = useState(false); 
+  const [deleteLoading, setDeleteLoading] = useState(null);
+
   // Fetch tickets on component mount
   useEffect(() => {
     dispatch(fetchTickets());
@@ -30,8 +36,53 @@ const TicketStats = () => {
   };
 
   // Handle status change for individual tickets
-  const handleStatusChange = (ticketId, newStatus) => {
-    dispatch(updateTicketStatus({ ticketId, status: newStatus}));
+  const handleStatusChange = async (ticketId, newStatus) => {
+    if (newStatus === "all") return; //prevents setting status to 'all'
+
+    setStatusUpdateLoading(ticketId);
+    try {
+      await dispatch(updateTicketStatus({ ticketId, status: newStatus })).unwrap();
+    } catch (error) {
+      console.error("Failed to update ticket status:", error);
+    } finally {
+      setStatusUpdateLoading(null);
+    };
+  };
+  
+  // Handle view ticket
+  const handleViewTicket = (ticket) => {
+    console.log("View ticket:", ticket._id);
+    setSelectedTicket(ticket);
+    setIsModalOpen(true);
+  };
+
+    // Handle delete ticket 
+  const handleDeleteTicket = async (ticketId) => {
+    if (window.confirm("Are you sure you want to delete this ticket? Ths action is irreversibe.")) {
+      setDeleteLoading(ticketId);
+      try {
+        await dispatch(deleteTicket(ticketId)).unwrap();
+        alert("Ticket deleted successfully!");
+        
+        if (isModalOpen) {
+          setIsModalOpen(false);
+          setSelectedTicket(null);
+        }
+
+        dispatch(fetchTickets());
+      } catch (err) {
+        alert(err || "Failed to delete ticket");
+      } finally {
+        setDeleteLoading(null);
+      }
+    }
+  };
+
+
+  // Close modal
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedTicket(null);
   };
 
   // Clear error when component unmounts or when needed
@@ -74,14 +125,6 @@ const TicketStats = () => {
             <h3>HelpDesk Pro</h3> 
             <h3 className="second-heading">Admin Dashboard</h3>
             </div>
-
-            {/* Error Display */}
-            { error && (
-              <div className="error-message">
-                <p>Error: {error}</p>
-                <button onClick={() => dispatch(clearError())}>Dismiss</button>
-              </div>
-            )}
 
             {/* Dynamic stats from redux */}
         <div className="ticket-info">
@@ -167,15 +210,18 @@ const TicketStats = () => {
             filteredTickets.map((ticket) => (
              <tr key={ticket._id}>
             <td>{ticket._id}</td>
+            <td title={ticket._id.slice(-6)}></td>
             <td title={ticket.subject}>{ticket.subject}</td>
             <td>
-              <select value={ticket.status} onChange={(e) => handleStatusChange(ticket._id, e.target.value)} className={getStatusClass(ticket.status)} disabled={loading}>
-                <option value="all">All Status</option>
+              <select value={ticket.status} onChange={(e) => handleStatusChange(ticket._id, e.target.value)} className={getStatusClass(ticket.status)} disabled={statusUpdateLoading === ticket._id}>
                   <option value="Open">Open</option>
                   <option value="InProgress">In Progress</option>
                   <option value="Pending">Pending</option>
                   <option value="Resolved">Resolved</option>
               </select>
+              {statusUpdateLoading === ticket._id && (
+                <span className="status-updating">Updating...</span>
+              )}
             </td>
             <td>
               <span className={getPriorityClass(ticket.priority)}>{ticket.priority}</span>
@@ -183,10 +229,8 @@ const TicketStats = () => {
             <td>{formatDate(ticket.dateCreated || ticket.createdAt)}</td>
             <td>{ticket.category}</td>
             <td className="actions">
-              <button className="btn-view" onClick={() => {
-                console.log("View ticket:", ticket._id);
-              }}>View</button>
-              <button className="btn-edit" onClick={() => { console.log("Edit ticket:", ticket._id)}}>Edit</button>
+              <button className="btn-view" onClick={() => handleViewTicket(ticket)}>View Ticket</button>
+              <button className="btn-delete" onClick={() => handleDeleteTicket(ticket._id)} disabled={deleteLoading === ticket._id}>Delete Ticket</button>
             </td>
             </tr>
             ))
@@ -208,6 +252,62 @@ const TicketStats = () => {
           {filters.category !== "all" && ` (filtered by category: ${filters.category})`}
       </p>
     </div>
+
+    {/* Modal for viewing ticket details */}
+    {isModalOpen && selectedTicket && (
+      <div className="modal-overlay" onClick={closeModal}>
+        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-header">
+            <h3> Ticket Details</h3>
+            <button className="close-button" onClick={closeModal}>&times;</button>
+          </div>
+          <div className="modal-body">
+            <div className="ticket-detail">
+              <label>ID:</label>
+              <span>{selectedTicket._id}</span>
+            </div>
+             <div className="ticket-detail">
+              <label>Subject:</label>
+              <span>{selectedTicket.subject}</span>
+            </div>
+            <div className="ticket-detail">
+              <label>Description:</label>
+              <span>{selectedTicket.description}</span>
+            </div>
+            <div className="ticket-detail">
+              <label>Status:</label>
+              <span className={getStatusClass(selectedTicket.status)}>{selectedTicket.status}</span>
+            </div>
+            <div className="ticket-detail">
+              <label>Priority:</label>
+              <span className={getPriorityClass(selectedTicket.priority)}>{selectedTicket.priority}</span>
+            </div>
+            <div className="ticket-detail">
+              <label>Category:</label>
+              <span>{selectedTicket.category}</span>
+            </div>
+            <div className="ticket-detail">
+              <label>CreatedBy:</label>
+              <span>{selectedTicket.userEmail}</span>
+            </div>
+            <div className="ticket-detail">
+              <label>Date Created:</label>
+              <span>{formatDate(selectedTicket.dateCreated || selectedTicket.createdAt)}</span>
+            </div>
+           {selectedTicket.updatedAt && (
+            <div className="ticket-detail">
+              <label>Last Updated:</label>
+              <span>{formatDate(selectedTicket.updatedAt)}</span>
+            </div>
+           )}
+          </div>
+          <div className="modal-footer">
+             <button className="btn-close" onClick={closeModal}>Close</button>
+              <button className="btn-delete" onClick={() => handleDeleteTicket(selectedTicket._id)} disabled={deleteLoading === selectedTicket._id}>Delete Ticket</button>
+          </div>
+        </div>
+      </div>
+    )}
 </div>
     );
 };

@@ -197,7 +197,7 @@ const TicketStats = () => {
               <button className="btn-view" onClick={() => {
                 console.log("View ticket:", ticket._id);
               }}>View</button>
-              <button className="btn-edit" onClick={() => { console.log("Edit ticket:", ticket._id)}}>Edit</button>
+              <button className="btn-delete" onClick={() => { console.log("Edit ticket:", ticket._id)}}>Delete</button>
             </td>
             </tr>
             ))

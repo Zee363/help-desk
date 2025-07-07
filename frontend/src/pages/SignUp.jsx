@@ -61,7 +61,7 @@ const SignUp = () => {
       </div>
       <div className="right-panel">
         <form className="signup-form" onSubmit={handleSubmit}>
-          <h2>Sign Up</h2>
+          <h2 className='signup-h2'>Sign Up</h2>
           <p>Join us today to manage your support tickets easily.</p>
 
           <label>Full name</label>
