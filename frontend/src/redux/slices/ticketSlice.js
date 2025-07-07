@@ -10,7 +10,7 @@ export const fetchTickets = createAsyncThunk("tickets/fetchTickets", async (_, t
     try {
         const token = authToken();
 
-        const response = await fetch(`${process.env.BACKEND_URL}/api/tickets/all`, {
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/tickets/all`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -42,7 +42,7 @@ export const fetchUserTickets = createAsyncThunk('tickets/fetchUserTickets', asy
         const decoded = jwtDecode(token);
         const userId = decoded.id;
 
-        const response = await fetch(`${process.env.BACKEND_URL}/api/tickets/user-tickets/${userId}`, {
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/tickets/user-tickets/${userId}`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': "application/json"
@@ -73,7 +73,7 @@ export const createTicket = createAsyncThunk("tickets/createTicket", async (tick
         const decoded = jwtDecode(token);
         const userId = decoded.id;
 
-        const response = await fetch(`${process.env.BACKEND_URL}/api/tickets/create`, {
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/tickets/create`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -103,7 +103,7 @@ export const updateTicket = createAsyncThunk("tickets/updateTicket", async({ tic
     try {
         const token = authToken();
 
-        const response = await fetch(`${process.env.BACKEND_URL}/api/tickets/${ticketId}`, {
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/tickets/${ticketId}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
@@ -129,7 +129,7 @@ export const updateTicketStatus = createAsyncThunk("tickets/updateTicketStatus",
     try {
         const token = authToken();
 
-        const response = await fetch(`${process.env.BACKEND_URL}/api/tickets/${ticketId}/status`, {
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/tickets/${ticketId}/status`, {
             method: "PATCH",
             headers: {
                 "Content-Type": "application/json",
@@ -155,7 +155,7 @@ export const deleteTicket = createAsyncThunk("tickets/deleteTicket", async (tick
     try {
         const token = authToken();
 
-        const response = await fetch(`${process.env.BACKEND_URL}/api/tickets/${ticketId}`, {
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/tickets/${ticketId}`, {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json",

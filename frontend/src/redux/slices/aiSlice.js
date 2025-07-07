@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 export const fetchAIResponse = createAsyncThunk("ai/fetchResponse", async(message, thunkAPI) => {
     try {
-    const response = await fetch("http://localhost:5002/api/ai-response", {
+    const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/ai-response`, {
         method: "POST",
         headers: { "Content-Type" : "application/json" },
         body: JSON.stringify({ 
