@@ -19,6 +19,7 @@ const authenticateToken = async (req, res, next) => {
             const message = err.name === 'TokenExpiredError' ? 'Access token expired.' : 'Invalid access token.';
             return res.status(403).json({ message });
         }
+        console.log("Decoded user:", user)
         req.user = user; // attaches decoded token { id, email, role }
         next();
     });

@@ -1,58 +1,75 @@
+const ticket = require('../models/ticket');
 const Ticket = require('../models/ticket'); 
+const User = require('../models/user');
 
 const createTicket = async (req, res) => {
     try {
-         const { subject, category, priority } = req.body;
+         const { subject, category, description, priority } = req.body;
+         const createdBy = req.user._id;
 
         // Validate required fields
-       if (!subject || !category || !priority) {
+       if (!subject || !category || !priority || !description) {
             return res.status(400).json({ message: 'All fields are required' });
         }
 
-        const newTicket = new Ticket({
+        const ticket = new Ticket({
             subject,
+            description,
             category,
             priority,
-            createdBy: req.user.id 
+            status: "Open",
+            userEmail: req.user.email,
+            createdBy
         });
 
-        await newTicket.save();
+        const savedTicket = await ticket.save();
+        await savedTicket.populate('createdBy', 'name email');
 
         res.status(201).json({
             message: 'Ticket created successfully',
-            ticket: newTicket
+            ticket: savedTicket
         });
     } catch (error) {
         console.error('Error creating ticket:', error);
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({ 
+            success: false,
+            message: 'Failed to create ticket',
+            error: error.message
+        });
     }
 };
 
- const getTickets = async (req, res) => {
+// Get all tickets for admin
+ const getAllTickets = async (req, res) => {
     try {
+        const tickets = await Ticket.find().populate('createdBy', 'name email').sort({ createdAt: -1});
+        
+        res.status(200).json(tickets);
+    } catch (error) {
+        console.error("Error fetching tickets:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to fetch tickets",
+            error: error.message
+        });
+    }
+
 let filter = {};
 
 if (req.user.role !== 'admin') {
     filter.createdBy = req.user._id; // Only fetch tickets created by the user
 }
 
-        const tickets = await Ticket.find(filter).populate('createdBy', 'fullname email') // Populate createdBy field with user details;
-        
-    res.status(200).json(tickets);
-    } catch (error) {
-        console.error('Error fetching tickets:', error);
-        res.status(500).json({ message: 'Server error' });
-    }
 };
 
-const getTicketById = async (req, res) => {
+
+// Get user-specific tickets
+const getUserTickets = async (req, res) => {
     try {
-    const { id } = req.params;
-
-    const ticketId = typeof id === 'object' ? id.id : id; // Handle both string and object ID formats
+    const userId = req.params.userId || req.user._id;
     
-    const ticket = await Ticket.findById(ticketId).populate('createdBy', 'fullname email'); // Populate createdBy field with user details
-
+    const tickets = await Ticket.find({ createdBy: userId }).populate('createdBy', 'name email').sort({ createdAt: -1 });
+    
     if (!ticket) {
         return res.status(404).json({ message: 'Ticket not found' });
     }
@@ -62,52 +79,100 @@ const getTicketById = async (req, res) => {
             return res.status(403).json({ message: 'Access denied' });
         }
 
-    res.status(200).json(ticket);
+        res.status(200).json(tickets);
     } catch (error) {
-        console.error('Error fetching ticket:', error);
-
-        if (error.name === 'CastError') {
-            return res.status(400).json({ message: 'Invalid ticket ID format' });
-        }
-        res.status(500).json({ message: 'Server error' });
+        console.error("Error fetching user tickets:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to fetch user tickets",
+            error: error.message
+        });
     }
 };
 
+// Update ticket status specifically
+const updateTicketStatus = async (req, res) => {
+    try {
+   const { id, ticketId } = req.params;
+   const actualId = id || ticketId;
+   const { status } = req.body;
+
+   // Validate status
+   const validStatuses = ["Open", "InProgress", "Pending", "Resolved"];
+   if (!validStatuses.includes(status)) {
+    return res.status(400).json({
+        success: false,
+        message: "Invalid status value"
+    });
+   }
+
+   const ticket = await Ticket.findById(actualId);
+   if (!ticket) {
+    return res.status(404).json({
+        success: false,
+        message: "Ticket not found"
+    });
+   }
+
+   // Check if user can update this ticket
+   if (req.user.role !== "admin" && ticket.createdBy.toString() !== req.user._id.toString()) {
+    return res.status(403).json({ message: "Access denied "});
+   }
+
+   const updatedTicket = await Ticket.findByIdAndUpdate(actualId, 
+    { status, updatedAt: new Date() },
+    { new: true, runValidators: true}
+   ).populate('createdBy', 'name email');
+
+   res.status(200).json({
+    success: true, 
+    message: "Ticket status updated successfully",
+    ticket: updatedTicket
+   });
+} catch (error) {
+    console.error("Error updating", error);
+}
+}
+
+// Update Ticket
  const updateTicket = async (req, res) => {
     try {
     const { id } = req.params;
-    const { subject, category, priority } = req.body;
+    const updateData = req.body;
 
-    const ticketId = typeof id === 'object' ? id.id : id; // Handle both string and object ID formats
-
-    const existingTicket = await Ticket.findById(ticketId);
-
-     if (!ticket) {
-            return res.status(404).json({ message: 'Ticket not found' });
-        }
-
-         // Check if user can update this ticket
-        if (req.user.role !== 'admin' && ticket.createdBy.toString() !== req.user._id.toString()) {
+      // Check if user can update this ticket
+        if (req.user.role !== 'admin' && ticket.createdBy !== req.user._id) {
             return res.status(403).json({ message: 'Access denied' });
         }
-        
-        const updatedTicket = await Ticket.findByIdAndUpdate(
-            ticketId,
-            { subject, category, priority },
-            { new: true }
-        );
 
-        res.status(200).json({
-            message: 'Ticket updated successfully',
-            ticket: updatedTicket,
-        });
-    } catch (error) {
-        console.error('Error updating ticket:', error);
+        console.log('req.params:', req.params);
+        console.log('req.user:', req.user);
+         console.log('req.body:', req.body);
 
-        if (error.name === 'CastError') {
-            return res.status(400).json({ message: 'Invalid ticket ID format' });
+
+    
+    const updatedTicket = await Ticket.findByIdAndUpdate(id, {
+        ...updateData, updatedAt: new Date(),
+    },
+    {
+        new: true, //Return the updated documet
+        runValidators: true  // Run model validators
+    }
+).populate('createdBy', 'name email');
+
+     if (!updateTicket) {
+            return res.status(404).json({ success: false, message: 'Ticket not found' });
         }
-        res.status(500).json({ message: 'Server error' });
+
+        res.status(200).json({success: true, message: "Ticket upfated successfully", ticket: updatedTicket});
+    } catch (error) {
+        console.error("Error updating ticket:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to update ticket",
+            error: error.message
+        });
+
     }
 };
 
@@ -115,15 +180,13 @@ const deleteTicket = async (req, res) => {
     try {
     const { id } = req.params;
 
-    const ticketId = typeof id === 'object' ? id.id : id; 
+    const deletedTicket = await Ticket.findByIdAndDelete(id);
 
-    const ticket = await Ticket.findByIdAndDelete(ticketId);
-
-        if (!ticket) {
-         return res.status(404).json({ message: 'Ticket not found' });
+        if (!deletedTicket) {
+         return res.status(404).json({ success: false, message: 'Ticket not found' });
         }
         
-        res.status(200).json({ message: 'Ticket deleted successfully' });
+        res.status(200).json({ success: true, message: 'Ticket deleted successfully', ticketId: id });
     } catch (error) {
         console.error('Error deleting ticket:', error);
         res.status(500).json({ message: 'Server error' });
@@ -132,8 +195,9 @@ const deleteTicket = async (req, res) => {
 
 module.exports = {
     createTicket,   
-    getTickets,
-    getTicketById,
+    getAllTickets,
+    getUserTickets,
+    updateTicketStatus,
     updateTicket,
     deleteTicket
 };

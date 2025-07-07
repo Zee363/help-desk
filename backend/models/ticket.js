@@ -18,13 +18,22 @@ const TicketSchema = new mongoose.Schema ({
         enum: ["Low", "Medium", "High", "Urgent"],
         required: true,
         default: "Low"
-    }, 
+    },
+    
+    status: {
+        type: String,
+        enum: ["Open", "InProgress", "Pending", "Resolved"],
+    },
+
+    userEmail: {
+        type: String,
+    },
 
     // Track who created the ticket
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
+        ref: "User",
+        required: false,
     }
    },  {
         timestamps: true,

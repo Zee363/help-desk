@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { jwtDecode } from "jwt-decode";
 
 // Helper to get token from localStorage
 const authToken = () => {
@@ -29,10 +30,19 @@ export const fetchTickets = createAsyncThunk("tickets/fetchTickets", async (_, t
 });
 
 //Fetch user-specific tickets
-export const fetchUserTickets = createAsyncThunk('tickets/fetchUserTickets', async ({ userId },{ rejectWithValue}) => {
+export const fetchUserTickets = createAsyncThunk('tickets/fetchUserTickets', async (_, { rejectWithValue}) => {
     try {
         const token = localStorage.getItem("token");
-        const response = await fetch(`http://localhost:5002/api/tickets/user/${userId}`, {
+
+        if (!token) {
+            throw new Error("No token found");
+        }
+
+        // Decode token to get userId
+        const decoded = jwtDecode(token);
+        const userId = decoded.id;
+
+        const response = await fetch(`http://localhost:5002/api/tickets/user-tickets/${userId}`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': "application/json"
@@ -55,6 +65,13 @@ export const fetchUserTickets = createAsyncThunk('tickets/fetchUserTickets', asy
 export const createTicket = createAsyncThunk("tickets/createTicket", async (ticketData, thunkAPI) => {
     try {
         const token = authToken();
+        
+        if(!token) {
+            throw new Error("No authentication token found");
+        }
+
+        const decoded = jwtDecode(token);
+        const userId = decoded.id;
 
         const response = await fetch("http://localhost:5002/api/tickets/create", {
             method: "POST",
@@ -62,7 +79,10 @@ export const createTicket = createAsyncThunk("tickets/createTicket", async (tick
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`
             },
-            body: JSON.stringify(ticketData),
+            body: JSON.stringify({
+                ...ticketData,
+                 createdBy: userId,
+                })
         });
 
         if (!response.ok) {
@@ -70,14 +90,16 @@ export const createTicket = createAsyncThunk("tickets/createTicket", async (tick
             throw new Error(errorResponse.message || "Failed to create ticket");
         }
 
-        return await response.json();
+        const data = await response.json();
+        return data.ticket;
+
     } catch (error) {
-        return thunkAPI.rejectWithValue(error.message);
+        return thunkAPI.rejectWithValue(error.message || "Unknown error occurred");
     }
 });
 
 // Update existing ticket
-export const updateTicket = createAsyncThunk("tickets/updateTicket", async({ ticketId, updateTicket }, thunkAPI) =>  {
+export const updateTicket = createAsyncThunk("tickets/updateTicket", async({ ticketId, updateData }, thunkAPI) =>  {
     try {
         const token = authToken();
 
@@ -87,7 +109,7 @@ export const updateTicket = createAsyncThunk("tickets/updateTicket", async({ tic
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`
             },
-            body: JSON.stringify(updateTicket),
+            body: JSON.stringify(updateData),
         });
 
         if (!response.ok) {
@@ -95,7 +117,8 @@ export const updateTicket = createAsyncThunk("tickets/updateTicket", async({ tic
             throw new Error(errorResponse.message || "Failed to update ticket");
         }
         
-        return await response.json();
+        const data = await response.json();
+        return data.ticket || data;
     } catch (error) {
         return thunkAPI.rejectWithValue(error.message);
     }
@@ -112,15 +135,16 @@ export const updateTicketStatus = createAsyncThunk("tickets/updateTicketStatus",
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`
             },
-            body: JSON.stringify({ status}),
+            body: JSON.stringify({ status }),
         });
 
         if (!response.ok) {
             const errorResponse = await response.json();
             throw new Error(errorResponse.message || "Failed to update ticket status");
         }
-
-        return await response.json();
+        
+        const data = await response.json();
+        return data.ticket || data;
     } catch (error) {
         return thunkAPI.rejectWithValue(error.message);
     }
@@ -150,21 +174,53 @@ export const deleteTicket = createAsyncThunk("tickets/deleteTicket", async (tick
     }
 });
 
-// Calculate stats from tickets array
+// Helper functions to apply filters
+const applyFilters = (tickets, filters) => {
+  return tickets.filter(ticket => {
+    return (
+      (filters.status === 'all' || ticket.status === filters.status) &&
+      (filters.priority === 'all' || ticket.priority === filters.priority) &&
+      (filters.category === 'all' || ticket.category === filters.category)
+    );
+  });
+};
+
+// Helper functions to calculate stats
 const calculateStats = (tickets) => {
-    return {
+    const stats = {
         total: tickets.length,
-        open: tickets.filter(tickets => tickets.status === 'Open').length,
-        inProgress: tickets.filter(tickets => tickets.status === 'In Progress').length,
-        pending: tickets.filter(tickets => tickets.status === 'Pending').length,
-        resolved: tickets.filter(tickets => tickets.status === 'Resolved').length,
-    };
+        open: 0,
+        inProgress: 0,
+        pending: 0, 
+        resolved: 0
+};
+
+tickets.forEach(ticket => {
+    switch (ticket.status) {
+        case "Open":
+            stats.open++;
+            break;
+        case "InProgess":
+        case "In Progress":
+            stats.inProgress++;
+            break;
+        case "Pending": 
+            stats.pending++;
+            break;
+        case "Resolved": 
+        stats.resolved++;
+            break;
+    }
+});
+
+return stats;
 };
 
 const initialState = {
     tickets: [],
     userTickets: [],
     filteredTickets: [],
+    selectedTicket: null,
     filters: {
         status: "all",
         priority: "all",
@@ -173,7 +229,7 @@ const initialState = {
     stats: {
         total: 0,
         open: 0,
-        inProgres: 0,
+        inProgress: 0,
         pending: 0,
         resolved: 0
     },
@@ -186,8 +242,8 @@ const ticketSlice = createSlice({
   initialState,
   reducers: {
     setFilters: (state, action) => {
-        state.filters = action.payload;
-        state.filteredTickets = applyFilters(state.tickets, action.payload);
+        state.filters = { ...state.filters, ...action.payload};
+        state.filteredTickets = applyFilters(state.tickets, state.filters);
     },
 
     // Clear error state
@@ -203,9 +259,6 @@ const ticketSlice = createSlice({
       state.selectedTicket = null;   
     },
 
-    setFilters: (state, action) => {
-      state.filters = {...state.filters, ...action.payload };
-    },
 
     resetFilters: (state) => {
         state.filters = {
@@ -213,6 +266,7 @@ const ticketSlice = createSlice({
             priority: "all",
             category: "all"
         };
+        state.filteredTickets = state.tickets;
     },
 
     // Manual status update (if needed)
@@ -230,6 +284,7 @@ const ticketSlice = createSlice({
     .addCase(fetchTickets.fulfilled, (state, action) => {
         state.loading = false;
         state.tickets = action.payload;
+        state.filteredTickets = applyFilters(action.payload, state.filters);
         state.stats = calculateStats(action.payload);
     })
     .addCase(fetchTickets.rejected, (state, action) => {
@@ -245,6 +300,8 @@ const ticketSlice = createSlice({
     .addCase(createTicket.fulfilled, (state, action) => {
         state.loading = false;
         state.tickets.push(action.payload);
+        state.userTickets.push(action.payload);
+        state.filteredTickets = applyFilters(state.tickets, state.filters);
         state.stats = calculateStats(state.tickets);
     })
     .addCase(createTicket.rejected, (state, action) =>{
@@ -273,16 +330,31 @@ const ticketSlice = createSlice({
     })
     .addCase(updateTicket.fulfilled, (state, action) => {
         state.loading = false;
-        const index = state.tickets.findIndex(ticket => ticket._id === action.payload._id);
-        if (index !== -1) {
-            state.tickets[index] = action.payload;
+        const updatedTicket = action.payload;
+
+        // Update generally
+        const ticketIndex = state.tickets.findIndex(ticket => ticket._id === action.payload._id);
+        if (ticketIndex !== -1) {
+            state.tickets[ticketIndex] = updatedTicket;
         }
+
+
+        // Update in user tickets
+        const userTicketIndex = state.userTickets.findIndex(ticket => ticket._id === action.payload._id);
+        if (userTicketIndex !== -1) {
+            state.userTickets[userTicketIndex] = action.payload;
+        }
+
+        // Upadate filtered tickets
+        state.filteredTickets = applyFilters(state.tickets, state.filters);
         state.stats = calculateStats(state.tickets);
 
         // Update selected ticket if it's the one being updated
         if (state.selectedTicket && state.selectedTicket._id === action.payload._id) {
             state.selectedTicket = action.payload;
         }
+
+        state.stats = calculateStats(state.tickets);
     })
     .addCase(updateTicket.rejected, (state, action) => {
         state.loading = false;
@@ -294,10 +366,20 @@ const ticketSlice = createSlice({
         state.error = null;
     })
     .addCase(updateTicketStatus.fulfilled, (state, action) => {
-        const index = state.tickets.findIndex(ticket => ticket._id === action.payload._id);
-        if (index !== -1) {
-            state.tickets[index] = action.payload;
+        // Update generally
+        const ticketIndex = state.tickets.findIndex(ticket => ticket._id === action.payload._id);
+        if (ticketIndex !== -1) {
+            state.tickets[ticketIndex] = action.payload;
         }
+
+        // Update in user tickets
+        const userTicketIndex = state.userTickets.findIndex(ticket => ticket._id === action.payload._id);
+        if (userTicketIndex !== -1) {
+            state.userTickets[userTicketIndex] = action.payload;
+        }
+
+        // Update filtered tickets
+        state.filteredTickets = applyFilters(state.tickets, state.filters);
         state.stats = calculateStats(state.tickets);
 
         // Update selected ticket
@@ -317,6 +399,8 @@ const ticketSlice = createSlice({
     .addCase(deleteTicket.fulfilled, (state, action) => {
         state.loading = false;
         state.tickets = state.tickets.filter(ticket => ticket._id !== action.payload);
+        state.userTickets = state.userTickets.filter(ticket => ticket._id !== action.payload);
+        state.filteredTickets = applyFilters(state.tickets, state.filters);
         state.stats = calculateStats(state.tickets);
 
         // Clear selected ticket that is to be deleted
@@ -331,17 +415,6 @@ const ticketSlice = createSlice({
    }
 });
 
-// Helper functions
-const applyFilters = (tickets, filters) => {
-  return tickets.filter(ticket => {
-    return (
-      (filters.status === 'all' || ticket.status === filters.status) &&
-      (filters.priority === 'all' || ticket.priority === filters.priority) &&
-      (filters.category === 'all' || ticket.category === filters.category)
-    );
-  });
-};
-
 export const {
     clearError,
     setSelectedTicket,
@@ -353,22 +426,26 @@ export const {
 
 export default ticketSlice.reducer;
 
-// Selectors for filtered tickets
+// Selectors 
+export const selectAllTickets  = (state) => state.tickets.tickets;
 
 export const selectFilteredTickets = (state) => {
     const { tickets, filters } = state.tickets;
-
-    return tickets.filter(ticket => {
-        const statusMatch = filters.status === "all" || ticket.status === filters.status;
-        const priorityMatch = filters.priority === "all" || ticket.priority === filters.priority;
-        const categoryMatch = filters.category === "all" || ticket.category === filters.category;
-
-        return statusMatch && priorityMatch && categoryMatch;
-    });
-};
+    return applyFilters(tickets, filters);
+    };
 
 export const selectTicketById = (state, ticketId) => {
     return state.tickets.tickets.find(ticket => ticket._id === ticketId);
 };
 
-export const selectUserTickets = (state)=> state.tickets.userTickets;
+export const selectUserTickets = (state) => state.tickets.userTickets;
+
+export const setSelectedTickets = (state) => state.tickets.selectedTicket;
+
+export const selectTicketStats = (state) => state.tickets.stats;
+
+export const selectTicketFilters = (state) => state.tickets.filters;
+
+export const selectTicketLoading = (state)=> state.tickets.loading;
+
+export const selectTicketError = (state)=> state.tickets.error;

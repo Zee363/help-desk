@@ -5,10 +5,11 @@ const jwt = require('jsonwebtoken');
 // Create a JWT token for the user
 const createToken = (user) => {
     return jwt.sign(
-        { id: user._id, email: user.email },
+        { userId: user._id, email: user.email, role: user.role },
         process.env.JWT_SECRET,
         { expiresIn: '1d' }
     );
+    console.log(token)
 };
 
 // Register a new user

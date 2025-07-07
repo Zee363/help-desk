@@ -4,8 +4,9 @@ const { authenticateToken, requireAdmin, filterByUserRole } = require('../middle
 const router = express.Router();
 
 router.post('/create', authenticateToken, ticketController.createTicket);
-router.get('/all', authenticateToken, ticketController.getTickets);
-router.get('/:id', authenticateToken, ticketController.getTicketById);
+router.get('/all', authenticateToken, ticketController.getAllTickets);
+router.get('/user-tickets/:userId', authenticateToken, ticketController.getUserTickets);
+router.patch('/:id/status', authenticateToken, ticketController.updateTicketStatus);
 router.put('/:id', authenticateToken, ticketController.updateTicket);
 router.delete('/:id', authenticateToken, ticketController.deleteTicket);
 
