@@ -9,7 +9,6 @@ const createToken = (user) => {
         process.env.JWT_SECRET,
         { expiresIn: '1d' }
     );
-    console.log(token)
 };
 
 // Register a new user
