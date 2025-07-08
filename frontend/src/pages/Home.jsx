@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { setInput, fetchAIResponse } from "../redux/slices/aiSlice";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRobot } from '@fortawesome/free-solid-svg-icons';
+import HelpdeskMarkdown from "../components/Helpdesk-markdown";
 import  "../styles/Home.css";
 
 const Home = () => {
@@ -34,7 +35,7 @@ const Home = () => {
         <div className="main-content">
             <div className="hero-section">
           <h2 className="main-title">Welcome to HelpDesk Pro!</h2>
-          <h3 className="subtitle">Get instant AI-powered support for your technical issues, or connect with our human experts</h3>
+          <h3 className="subtitle">Get instant AI-powered support for your technical issues, or connect with our human experts.</h3>
           <p className="description">Need help? Ask your question below.</p>
           </div>
 
@@ -52,7 +53,7 @@ const Home = () => {
                 <strong>AI Assistant:</strong>
                 </div>
                 <div className="response-content">
-                    {response}
+                    <HelpdeskMarkdown content={response} />
                 </div>
              </div>
           )}

@@ -1,5 +1,4 @@
 import React, { useState, useEffect} from 'react';
-import { setInput, fetchAIResponse } from "../redux/slices/aiSlice";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars, faRobot } from '@fortawesome/free-solid-svg-icons';
 import { Link, useNavigate } from 'react-router-dom';
@@ -52,7 +51,6 @@ const Header = () => {
                         <>
                     {user.role === "admin" && (
                     <>
-                    <li><Link to="/tickets">Tickets</Link></li>
                      <li><Link to="/admin/dashboard">Admin Dashboard</Link></li>
                       </>
                     )}

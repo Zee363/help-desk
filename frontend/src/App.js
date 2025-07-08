@@ -7,7 +7,6 @@ import Header from './components/Header';
 import TicketStats from './pages/TicketStats';
 import Dashboard from './pages/Dashboard';
 import UserDashboard from './pages/UserDashboard';
-import Tickets from './pages/UserTickets';
 
 function App() {
   return (
@@ -21,7 +20,6 @@ function App() {
       <Route path='/ticket/stats' element={<TicketStats />} />
       <Route path='/admin/dashboard' element={<Dashboard />} />
       <Route path='/user/dashboard' element={<UserDashboard />} />
-      <Route path='/tickets' element={<Tickets />} />
      </Routes>
     </BrowserRouter>
     </div>

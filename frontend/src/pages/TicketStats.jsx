@@ -140,10 +140,10 @@ const TicketStats = () => {
               <label>Prority:</label>
               <select value={filters.priority} onChange={(e) => handleFilterChange('priority', e.target.value)}>
                 <option value="all">All Priority</option>
-                <option value="Low">LOW</option>
+                <option value="Low">Low</option>
                 <option value="Medium">Medium</option>
                 <option value="High">High</option>
-                <option value="Critical">Critical</option>
+                <option value="Urgent">Urgent</option>
               </select>
              </div>
 
@@ -171,6 +171,7 @@ const TicketStats = () => {
             <th>Priority</th>
             <th>Date Created</th>
             <th>Category</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>

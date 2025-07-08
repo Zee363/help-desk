@@ -133,3 +133,24 @@ input {
     border: 1px solid #e9ecef;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
+
+.markdown-content h1,
+.markdown-content h2,   
+.markdown-content h3,
+.markdown-content h4,
+.markdown-content h5,
+.markdown-content h6, 
+.markdown-content p,
+.markdown-content li
+{
+   text-align: left !important;
+
+}
+
+.markdown-content {
+   text-align: left !important;
+}
+
+.response-container, .reeponse-content {
+    text-align: left !important;
+}
